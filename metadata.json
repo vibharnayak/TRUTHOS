@@ -1,0 +1,12 @@
+{
+  "name": "TRUTHOS — Autonomous AI Knowledge Intelligence",
+  "description": "Multi-agent factual verification, temporal knowledge graph, predictive knowledge decay, Evidence DNA provenance, and autonomous reverification platform powered by Tavily.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "Multi-agent factual verification",
+    "Temporal knowledge graph",
+    "Predictive knowledge decay",
+    "Evidence provenance",
+    "Tavily-powered live research"
+  ]
+}

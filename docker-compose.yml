@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: truthos
+      POSTGRES_PASSWORD: truthos_password
+      POSTGRES_DB: truthos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    environment:
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      DATABASE_URL: postgresql+psycopg2://truthos:truthos_password@postgres:5432/truthos
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: celery -A backend.app.workers.celery_app worker --beat --loglevel=info
+    environment:
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      DATABASE_URL: postgresql+psycopg2://truthos:truthos_password@postgres:5432/truthos
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      DATABASE_PATH: /app/data/truthos.db
+    ports:
+      - "3000:3000"
+    volumes:
+      - app_data:/app/data
+
+volumes:
+  postgres_data:
+  app_data:
